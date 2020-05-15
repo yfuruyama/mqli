@@ -40,11 +40,11 @@ func (c *Cli) RunInteractive() int {
 	rl.SetPrompt("mql> ")
 	for {
 		line, err := rl.Readline()
-		if err != nil {
-			return c.ExitOnError(err)
-		}
 		if err == io.EOF {
 			return c.Exit()
+		}
+		if err != nil {
+			return c.ExitOnError(err)
 		}
 		if strings.ToLower(line) == "exit" || strings.ToLower(line) == "quit" {
 			return c.Exit()
