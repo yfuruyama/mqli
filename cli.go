@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/chzyer/readline"
+	"github.com/olekukonko/tablewriter"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -44,17 +46,34 @@ func (c *Cli) RunInteractive() int {
 		if err == io.EOF {
 			return c.Exit()
 		}
+		if strings.ToLower(line) == "exit" || strings.ToLower(line) == "quit" {
+			return c.Exit()
+		}
 
 		stop := c.PrintProgressingMark()
 		client := Client{c.projectID}
-		resp, err := client.Query(line)
+		result, err := client.Query(line)
 		stop()
 		if err != nil {
 			c.PrintInteractiveError(err)
 			continue
 		}
 
-		fmt.Fprintf(c.out, "%#v\n", resp)
+		if len(result.Rows) > 0 {
+			table := tablewriter.NewWriter(c.out)
+			table.SetAutoFormatHeaders(false)
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAutoWrapText(false)
+			for _, row := range result.Rows {
+				table.Append(row.Columns)
+			}
+			table.SetHeader(result.Header)
+			table.Render()
+			fmt.Fprintf(c.out, "%d points in result\n\n", len(result.Rows))
+		} else {
+			fmt.Fprintf(c.out, "Empty result\n\n")
+		}
 	}
 }
 
