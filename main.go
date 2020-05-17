@@ -9,7 +9,7 @@ import (
 func main() {
 	var projectID string
 
-	flag.StringVar(&projectID, "p", "", "")
+	flag.StringVar(&projectID, "p", "", "GCP Project ID")
 	flag.Parse()
 
 	if projectID == "" {
