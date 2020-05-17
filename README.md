@@ -21,10 +21,13 @@ $ mqli -p ${PROJECT_ID}
 mql> 
 ```
 
+Multi-line query
+
+```
+mql> fetch ... \
+  -> | within 1m \
+  -> | top 3
+```
+
 ## Disclaimer
 This is not an officially supported Google Cloud product.
-
-## TODO
-- both start_date and end_date?
-- value key name
-- "resource.xxx and metric.xxx" remove

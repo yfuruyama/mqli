@@ -34,7 +34,7 @@ func buildQueryResult(descriptor *monitoring.TimeSeriesDescriptor, history []*mo
 	if showStartTime {
 		result.Header = append(result.Header, "start_time", "end_time")
 	} else {
-		result.Header = append(result.Header, "end_time")
+		result.Header = append(result.Header, "time")
 	}
 
 	// Header columns for value

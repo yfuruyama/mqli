@@ -12,6 +12,8 @@ import (
 const (
 	exitCodeSuccess = 0
 	exitCodeError   = 1
+
+	defaultPrompt = "mql> "
 )
 
 type Cli struct {
@@ -36,23 +38,24 @@ func (c *Cli) RunInteractive() int {
 	if err != nil {
 		return c.ExitOnError(err)
 	}
+	rl.SetPrompt(defaultPrompt)
 
-	rl.SetPrompt("mql> ")
 	for {
-		line, err := rl.Readline()
+		input, err := c.ReadInput(rl)
 		if err == io.EOF {
 			return c.Exit()
 		}
 		if err != nil {
 			return c.ExitOnError(err)
 		}
-		if strings.ToLower(line) == "exit" || strings.ToLower(line) == "quit" {
+
+		if strings.ToLower(input) == "exit" || strings.ToLower(input) == "quit" {
 			return c.Exit()
 		}
 
 		stop := c.PrintProgressingMark()
 		client := Client{c.projectID}
-		result, err := client.Query(line)
+		result, err := client.Query(input)
 		stop()
 		if err != nil {
 			c.PrintInteractiveError(err)
@@ -74,6 +77,39 @@ func (c *Cli) RunInteractive() int {
 		} else {
 			fmt.Fprintf(c.out, "Empty result\n\n")
 		}
+	}
+}
+
+func (c *Cli) ReadInput(rl *readline.Instance) (string, error) {
+	defer rl.SetPrompt(defaultPrompt)
+
+	var input string
+	var multiline bool
+	for {
+		line, err := rl.Readline()
+		if err != nil {
+			return "", err
+		}
+		if line == "" {
+			continue
+		}
+
+		line = strings.TrimSpace(line)
+
+		// multiline
+		if strings.HasSuffix(line, `\`) {
+			input += strings.TrimSuffix(line, `\`)
+			rl.SetPrompt("  -> ")
+			multiline = true
+			continue
+		}
+
+		input += line
+		if multiline {
+			// Save multi-line input as single-line input into the history
+			rl.SaveHistory(input)
+		}
+		return input, nil
 	}
 }
 
