@@ -42,11 +42,13 @@ func buildQueryResult(descriptor *monitoring.TimeSeriesDescriptor, history []*mo
 		result.Header = append(result.Header, normalizeValueKey(pd.Key))
 	}
 
-	// Row columns
+	// Body columns
 	for _, data := range history {
 		var labelValues [] string
-		for _, lv := range data.LabelValues {
-			labelValues = append(labelValues, lv.StringValue)
+		for i, lv := range data.LabelValues {
+			valueType := descriptor.LabelDescriptors[i].ValueType
+			encoded := labelValueEncodeString(valueType, lv)
+			labelValues = append(labelValues, encoded)
 		}
 
 		for _, point := range data.PointData {
@@ -82,6 +84,19 @@ func normalizeValueKey(key string) string {
 	return strings.TrimPrefix(key, "value.")
 }
 
+func labelValueEncodeString(valueType string, value *monitoring.LabelValue) string {
+	switch valueType {
+	case "STRING", "": // Empty valueType is STRING by default
+		return value.StringValue
+	case "BOOL":
+		return fmt.Sprintf("%t", value.BoolValue)
+	case "INT64":
+		return fmt.Sprintf("%d", value.Int64Value)
+	default:
+		return ""
+	}
+}
+
 func valueEncodeString(valueType string, value *monitoring.TypedValue) string {
 	switch valueType {
 	case "VALUE_TYPE_UNSPECIFIED":
@@ -111,10 +126,7 @@ func valueEncodeString(valueType string, value *monitoring.TypedValue) string {
 			return ""
 		}
 		// TODO
-		return "TODO"
-	case "MONEY":
-		// TODO
-		return "TODO"
+		return "TODO: Sorry, distribution value is not supported yet"
 	default:
 		return ""
 	}
