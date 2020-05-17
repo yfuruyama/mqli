@@ -2,6 +2,8 @@ mqli
 ===
 An interactive client for Google Cloud [Monitoring Query Language](https://cloud.google.com/monitoring/mql).
 
+Currently under development.
+
 ## Install
 
 ```
