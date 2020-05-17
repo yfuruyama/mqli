@@ -7,16 +7,22 @@ import (
 
 type Client struct {
 	projectID string
+	svc       *monitoring.ProjectsTimeSeriesService
 }
 
-func (c *Client) Query(q string) (*Result, error) {
-	ctx := context.Background()
+func NewClient(ctx context.Context, projectID string) (*Client, error) {
 	s, err := monitoring.NewService(ctx)
 	if err != nil {
 		return nil, err
 	}
-	svc := monitoring.NewProjectsTimeSeriesService(s)
-	call := svc.Query("projects/"+c.projectID, &monitoring.QueryTimeSeriesRequest{
+	return &Client{
+		projectID: projectID,
+		svc: monitoring.NewProjectsTimeSeriesService(s),
+	}, nil
+}
+
+func (c *Client) Query(q string) (*Result, error) {
+	call := c.svc.Query("projects/"+c.projectID, &monitoring.QueryTimeSeriesRequest{
 		Query: q,
 	})
 	resp, err := call.Do()

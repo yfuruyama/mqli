@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/chzyer/readline"
 	"github.com/olekukonko/tablewriter"
@@ -40,6 +41,12 @@ func (c *Cli) RunInteractive() int {
 	}
 	rl.SetPrompt(defaultPrompt)
 
+	ctx := context.Background()
+	client, err := NewClient(ctx, c.projectID)
+	if err != nil {
+		return c.ExitOnError(err)
+	}
+
 	for {
 		input, err := c.ReadInput(rl)
 		if err == io.EOF {
@@ -54,7 +61,6 @@ func (c *Cli) RunInteractive() int {
 		}
 
 		stop := c.PrintProgressingMark()
-		client := Client{c.projectID}
 		result, err := client.Query(input)
 		stop()
 		if err != nil {

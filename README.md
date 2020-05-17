@@ -2,16 +2,16 @@ mqli
 ===
 An interactive client for Google Cloud [Monitoring Query Language](https://cloud.google.com/monitoring/mql).
 
-## Usage
-
-```
-$ mqli -p ${PROJECT_ID}
-```
-
 ## Install
 
 ```
 $ go get -u github.com/yfuruyama/mqli
+```
+
+## Usage
+
+```
+$ mqli -p ${PROJECT_ID}
 ```
 
 ## Example
