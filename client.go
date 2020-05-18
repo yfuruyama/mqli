@@ -65,6 +65,7 @@ func (c *Client) Query(q string) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if err := googleapi.CheckResponse(resp); err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
