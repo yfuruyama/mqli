@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"google.golang.org/api/monitoring/v3"
-	"strconv"
 	"strings"
 )
 
@@ -115,7 +114,7 @@ func valueEncodeString(valueType string, value *monitoring.TypedValue) string {
 		if value.DoubleValue == nil {
 			return ""
 		}
-		return strconv.FormatFloat(*value.DoubleValue, 'g', -1, 64)
+		return fmt.Sprintf("%f", *value.DoubleValue)
 	case "STRING":
 		if value.StringValue == nil {
 			return ""
@@ -125,8 +124,7 @@ func valueEncodeString(valueType string, value *monitoring.TypedValue) string {
 		if value.DistributionValue == nil {
 			return ""
 		}
-		// TODO
-		return "TODO: Sorry, distribution value is not supported yet"
+		return fmt.Sprintf("%f", value.DistributionValue.Mean)
 	default:
 		return ""
 	}
