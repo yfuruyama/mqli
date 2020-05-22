@@ -2,8 +2,6 @@ mqli
 ===
 An interactive client for Google Cloud [Monitoring Query Language](https://cloud.google.com/monitoring/mql).
 
-Currently under development.
-
 ## Install
 
 ```
@@ -34,7 +32,7 @@ mql> fetch gce_instance::compute.googleapis.com/instance/cpu/utilization | withi
 6 points in result
 ```
 
-You can input multi-line query with putting a backslash(`\\`) in the end of the input.
+You can input multi-line query with a backslash(`\`) in the end of the input.
 
 ```
 mql> fetch gce_instance::compute.googleapis.com/instance/cpu/utilization \
