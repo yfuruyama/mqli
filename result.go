@@ -46,7 +46,7 @@ func buildQueryResult(descriptor *monitoring.TimeSeriesDescriptor, history []*mo
 		var labelValues [] string
 		for i, lv := range data.LabelValues {
 			valueType := descriptor.LabelDescriptors[i].ValueType
-			encoded := labelValueEncodeString(valueType, lv)
+			encoded := encodeLabelValue(valueType, lv)
 			labelValues = append(labelValues, encoded)
 		}
 
@@ -62,7 +62,7 @@ func buildQueryResult(descriptor *monitoring.TimeSeriesDescriptor, history []*mo
 
 			for i, v := range point.Values {
 				valueType := descriptor.PointDescriptors[i].ValueType
-				encoded := valueEncodeString(valueType, v)
+				encoded := encodeValue(valueType, v)
 				row.Columns = append(row.Columns, encoded)
 			}
 			result.Rows = append(result.Rows, row)
@@ -83,7 +83,7 @@ func normalizeValueKey(key string) string {
 	return strings.TrimPrefix(key, "value.")
 }
 
-func labelValueEncodeString(valueType string, value *monitoring.LabelValue) string {
+func encodeLabelValue(valueType string, value *monitoring.LabelValue) string {
 	switch valueType {
 	case "STRING", "": // Empty valueType is STRING by default
 		return value.StringValue
@@ -96,7 +96,7 @@ func labelValueEncodeString(valueType string, value *monitoring.LabelValue) stri
 	}
 }
 
-func valueEncodeString(valueType string, value *monitoring.TypedValue) string {
+func encodeValue(valueType string, value *monitoring.TypedValue) string {
 	switch valueType {
 	case "VALUE_TYPE_UNSPECIFIED":
 		return ""

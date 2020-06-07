@@ -60,6 +60,11 @@ func (c *Cli) RunInteractive() int {
 			return c.Exit()
 		}
 
+		// TODO
+		//if strings.HasPrefix(strings.ToLower(input) , "listmetrics") {
+			// https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.metricDescriptors/list
+		//}
+
 		stop := c.PrintProgressingMark()
 		result, err := client.Query(input)
 		stop()
