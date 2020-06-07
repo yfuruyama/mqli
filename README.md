@@ -1,5 +1,6 @@
-mqli [![CircleCI](https://circleci.com/gh/yfuruyama/mqli.svg?style=svg)](https://circleci.com/gh/yfuruyama/mqli)
+mqli
 ===
+[![CircleCI](https://circleci.com/gh/yfuruyama/mqli.svg?style=svg)](https://circleci.com/gh/yfuruyama/mqli)
 An interactive client for Google Cloud [Monitoring Query Language](https://cloud.google.com/monitoring/mql).
 
 ## Install
