@@ -103,28 +103,18 @@ func insertTimeSeries(t *testing.T, projectID string, labels map[string]string, 
 	}
 
 	// CreateTimeSeries call often fails, so we try to retry calling it until it succeeds.
-	createTimeSeriesWithRetry := func(ctx context.Context) error {
-		retryer := gax.OnCodes([]codes.Code{codes.Internal, codes.Unavailable, codes.Unknown}, gax.Backoff{
+	retryOption := gax.WithRetry(func() gax.Retryer {
+		return gax.OnCodes([]codes.Code{codes.Internal, codes.Unavailable, codes.Unknown}, gax.Backoff{
 			Initial:    time.Second,
 			Max:        time.Second * 10,
 			Multiplier: 2,
 		})
-		ctx, cancel := context.WithTimeout(ctx, time.Second*30)
-		defer cancel()
-		for {
-			if err := c.CreateTimeSeries(ctx, req); err != nil {
-				if delay, shouldRetry := retryer.Retry(err); shouldRetry {
-					if err := gax.Sleep(ctx, delay); err != nil {
-						return err
-					}
-					continue
-				}
-				return err
-			}
-			return nil
-		}
-	}
-	return metricType, createTimeSeriesWithRetry(ctx)
+	})
+	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
+	return metricType, gax.Invoke(ctx, func(ctx context.Context, settings gax.CallSettings) error {
+		return c.CreateTimeSeries(ctx, req)
+	}, retryOption)
 }
 
 func TestQuery(t *testing.T) {
