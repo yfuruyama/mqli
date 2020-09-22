@@ -6,7 +6,9 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/googleapis/gax-go/v2"
 	"google.golang.org/genproto/googleapis/api/monitoredres"
+	"google.golang.org/grpc/codes"
 	"os"
 	"testing"
 	"time"
@@ -100,7 +102,29 @@ func insertTimeSeries(t *testing.T, projectID string, labels map[string]string, 
 		},
 	}
 
-	return metricType, c.CreateTimeSeries(ctx, req)
+	// CreateTimeSeries call often fails, so we try to retry calling it until it succeeds.
+	createTimeSeriesWithRetry := func(ctx context.Context) error {
+		retryer := gax.OnCodes([]codes.Code{codes.Internal, codes.Unavailable, codes.Unknown}, gax.Backoff{
+			Initial:    time.Second,
+			Max:        time.Second * 10,
+			Multiplier: 2,
+		})
+		ctx, cancel := context.WithTimeout(ctx, time.Second*30)
+		defer cancel()
+		for {
+			if err := c.CreateTimeSeries(ctx, req); err != nil {
+				if delay, shouldRetry := retryer.Retry(err); shouldRetry {
+					if err := gax.Sleep(ctx, delay); err != nil {
+						return err
+					}
+					continue
+				}
+				return err
+			}
+			return nil
+		}
+	}
+	return metricType, createTimeSeriesWithRetry(ctx)
 }
 
 func TestQuery(t *testing.T) {
@@ -115,14 +139,14 @@ func TestQuery(t *testing.T) {
 	}
 
 	for _, tt := range []struct {
-		desc string
+		desc         string
 		labels       map[string]string
 		value        int64
 		isCumulative bool
 		want         *Result
 	}{
 		{
-			desc: "gauge data",
+			desc:         "gauge data",
 			labels:       map[string]string{"foo": "bar"},
 			value:        123,
 			isCumulative: false,
@@ -136,7 +160,7 @@ func TestQuery(t *testing.T) {
 			},
 		},
 		{
-			desc: "cumulative data",
+			desc:         "cumulative data",
 			labels:       map[string]string{"hoge": "fuga"},
 			value:        1000,
 			isCumulative: true,
@@ -157,7 +181,7 @@ func TestQuery(t *testing.T) {
 			}
 
 			// Need to wait for time series data becomes visible
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 10)
 
 			query := fmt.Sprintf("fetch global::%s | for 10m", metricType)
 			got, err := client.Query(query)
