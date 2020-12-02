@@ -7,7 +7,7 @@ An interactive client for Google Cloud [Monitoring Query Language](https://cloud
 ## Install
 
 ```
-$ go get -u github.com/yfuruyama/mqli
+$ GO111MODULE=on go get github.com/yfuruyama/mqli
 ```
 
 ## Usage
